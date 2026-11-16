@@ -502,7 +502,7 @@ patch_lightspeed() {
 
   local result
   result="$(
-    oc get olsconfig cluster "${scope_args[@]}" -o json | MCP_URL="${mcp_url}" python3 -c '
+    oc get olsconfig cluster ${scope_args[@]+"${scope_args[@]}"} -o json | MCP_URL="${mcp_url}" python3 -c '
 import json, os, sys
 doc = json.load(sys.stdin)
 spec = doc.get("spec") or {}
@@ -529,7 +529,7 @@ json.dump({"spec": {"featureGates": gates, "mcpServers": servers}}, sys.stdout)
   local status="${result%%$'\n'*}"
   local patch_body="${result#*$'\n'}"
   if [[ "${status}" == "changed" ]]; then
-    printf '%s' "${patch_body}" | merge_patch olsconfig cluster "${scope_args[@]}"
+    printf '%s' "${patch_body}" | merge_patch olsconfig cluster ${scope_args[@]+"${scope_args[@]}"}
     if oc get deployment lightspeed-app-server -n "${LIGHTSPEED_NAMESPACE}" >/dev/null 2>&1; then
       info "Restarting Lightspeed so it reloads the ACS MCP server."
       oc rollout restart deployment/lightspeed-app-server -n "${LIGHTSPEED_NAMESPACE}" >/dev/null || \
